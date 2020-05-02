@@ -42,10 +42,10 @@
 #define ROW_SIZE 16
 #define DATASET_BYTES 5
 
-#define CYDEV_EEPROM_ROW_SIZE 0x00000010u
+#define CYDEV_EEPROM_ROW_SIZE 4u
 #define CY_EEPROM_SIZEOF_ROW        (CYDEV_EEPROM_ROW_SIZE)
 
-#define CYDEV_EE_SIZE 0x00000800u
+#define CYDEV_EE_SIZE 1024
 #define CY_EEPROM_SIZE              (CYDEV_EE_SIZE)
     
 #define SEND_CONST_STRING(string,port) send_buffer((uint8_t*)string,ntlibc_strlen(string),port);
@@ -62,13 +62,6 @@
 #define PORT_TERM_TT     1
 #define PORT_TERM_MQTT   2
     
-#define ETH_HW_DISABLED  0
-#define ETH_HW_W5500     1
-#define ETH_HW_ESP32     2
-    
-#define CT2_TYPE_CURRENT      0
-#define CT2_TYPE_VOLTAGE      1
-
 
 #define STREAMBUFFER_RX_SIZE    128     //bytes
 #define STREAMBUFFER_TX_SIZE    128    //bytes
@@ -112,7 +105,7 @@ struct parameter_entry_struct {
 
 uint8_t updateDefaultFunction(parameter_entry * params, char * newValue, uint8_t index, port_str *ptr);
 void EEPROM_write_conf(parameter_entry * params, uint8_t param_size, uint16_t eeprom_offset ,port_str *ptr);
-void EEPROM_read_conf(parameter_entry * params, uint8_t param_size, uint16_t eeprom_offset ,port_str *ptr);
+uint8_t EEPROM_read_conf(parameter_entry * params, uint8_t param_size, uint16_t eeprom_offset ,port_str *ptr);
 void print_param_help(parameter_entry * params, uint8_t param_size, port_str *ptr);
 void print_param(parameter_entry * params, uint8_t index, port_str *ptr);
 void print_param_buffer(char * buffer, parameter_entry * params, uint8_t index);

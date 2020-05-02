@@ -39,7 +39,8 @@
 
 void nt_interpret(char *text, port_str *ptr);
 void init_config();
-void eeprom_load(port_str *ptr);
+void recalc_params();
+uint8_t eeprom_load(port_str *ptr);
 
 uint8_t command_cls(char *commandline, port_str *ptr);
 void stop_overlay_task(port_str *ptr);

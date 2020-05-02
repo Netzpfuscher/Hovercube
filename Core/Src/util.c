@@ -79,7 +79,7 @@ void BLDC_Init(void) {
   rtP_Left.b_diagEna            = DIAG_ENA; 
   //rtP_Left.i_max                = configuration.curr_max * A2BIT_CONV;  // fixdt(1,16,4)
   //rtP_Left.n_max                = configuration.nmot_max;               // fixdt(1,16,4)
-  rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA; 
+  //rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA;
   rtP_Left.id_fieldWeakMax      = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;   // fixdt(1,16,4)
   rtP_Left.a_phaAdvMax          = PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
   rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)

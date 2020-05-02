@@ -29,6 +29,7 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
+#include "util.h"
 
 xTaskHandle UART_Terminal_TaskHandle;
 
@@ -123,6 +124,12 @@ void tsk_cli_TaskProc(void *pvParameters) {
     xSemaphoreGive(port.term_block);
 
     tsk_uart_Start(&port);
+
+    if(eeprom_load(&port)==pdFAIL){
+    	init_config();
+    }
+    recalc_params();
+    BLDC_Init();
 
     /* `#END` */
 

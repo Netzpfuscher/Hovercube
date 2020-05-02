@@ -30,6 +30,7 @@
 #include "config.h"
 #include "cli_common.h"
 #include "util.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -157,9 +158,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-
-  init_config();
-  BLDC_Init();
 
   HAL_GPIO_WritePin(TPS_ENA_GPIO_Port, TPS_ENA_Pin, pdTRUE);
 

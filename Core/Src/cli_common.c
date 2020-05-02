@@ -37,6 +37,7 @@
 #include "helper/ntc.h"
 #include "math.h"
 #include "util.h"
+
 #include <string.h>
 
 #include "defines.h"
@@ -81,6 +82,11 @@ cli_parameter param;
 extern P rtP_Left;                      /* Block parameters (auto storage) */
 extern ExtU     rtU_Left;
 
+void recalc_params(){
+
+	rtP_Left.i_max = configuration.curr_max * A2BIT_CONV;
+}
+
 /*****************************************************************************
 * Initializes parameters with default values
 ******************************************************************************/
@@ -90,14 +96,14 @@ void init_config(){
     
     rtU_Left.z_ctrlModReq = 1;
     configuration.curr_max = 5<<4;
-    rtP_Left.i_max = configuration.curr_max * A2BIT_CONV;
     rtP_Left.b_fieldWeakEna = 1;
 
     param.test1 = 0;
     param.test2 = 0;
-
+    recalc_params();
 
 }
+
 
 // clang-format off
 
@@ -147,8 +153,8 @@ command_entry commands[] = {
     ADD_COMMAND("signals"       ,command_signals        ,"For debugging")
 };
 
-void eeprom_load(port_str *ptr){
-    EEPROM_read_conf(confparam, PARAM_SIZE(confparam) ,0,ptr);
+uint8_t eeprom_load(port_str *ptr){
+    return EEPROM_read_conf(confparam, PARAM_SIZE(confparam) ,0,ptr);
 }
 
 
@@ -167,7 +173,7 @@ extern uint8_t enable;
 uint8_t callback_ConfigFunction(parameter_entry * params, uint8_t index, port_str *ptr){
 
 	rtU_Left.r_inpTgt = 0;
-	rtP_Left.i_max = configuration.curr_max * A2BIT_CONV;
+	recalc_params();
 
 	return 1;
 }
@@ -341,6 +347,7 @@ uint8_t command_set(char *commandline, port_str *ptr) {
 
 
 
+#define ADDR_FLASH_PAGE_63    ((uint32_t)0x0800FC00) /* Base @ of Page 63, 1 Kbytes */
 
 /*****************************************************************************
 * Saves confparams to eeprom
@@ -350,9 +357,19 @@ uint8_t command_eprom(char *commandline, port_str *ptr) {
     CHECK_NULL(commandline);
     
 	if (ntlibc_stricmp(commandline, "save") == 0) {
+		taskENTER_CRITICAL();
+		HAL_FLASH_Unlock();
+		uint32_t page_error = 0;
+		FLASH_EraseInitTypeDef s_eraseinit;
+		s_eraseinit.TypeErase   = FLASH_TYPEERASE_PAGES;
+		s_eraseinit.PageAddress = ADDR_FLASH_PAGE_63;
+		s_eraseinit.NbPages     = 1;
+		HAL_FLASHEx_Erase(&s_eraseinit, &page_error);
 
 	    EEPROM_write_conf(confparam, PARAM_SIZE(confparam),0, ptr);
 
+	    HAL_FLASH_Lock();
+	    taskEXIT_CRITICAL();
 		return 0;
 	}
 	if (ntlibc_stricmp(commandline, "load") == 0) {

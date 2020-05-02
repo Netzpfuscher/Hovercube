@@ -32,8 +32,10 @@
 #include "tasks/tsk_uart.h"
 
 
-uint8_t EEPROM_Read_Row(uint8_t row, uint8_t * buffer);
-uint8_t EEPROM_1_Write_Row(uint8_t row, uint8_t * buffer);
+uint8_t EEPROM_Read_Row(uint16_t row, uint8_t * buffer);
+uint8_t EEPROM_1_Write_Row(uint16_t row, uint8_t * buffer);
+
+#define ADDR_FLASH_PAGE_63    ((uint32_t)0x0800FC00) /* Base @ of Page 63, 1 Kbytes */
 
 uint16_t byte_cnt;
 
@@ -41,10 +43,13 @@ uint16_t byte_cnt;
 //#define EEPROM_WRITE_ROW(x,y) EEPROM_1_Write(y,x)
 
 uint8_t EEPROM_1_ReadByte(uint8_t x){
-	return 0;
+	uint8_t data[4];
+	*(uint32_t*)data = (*(__IO uint32_t*)(ADDR_FLASH_PAGE_63+((x/4)*4)));
+	return data[x%4];
 }
 
-uint8_t EEPROM_1_Write(uint8_t* y, uint8_t x){
+uint8_t EEPROM_1_Write(uint8_t* y, uint16_t x){
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, ADDR_FLASH_PAGE_63+(x*4), *(uint32_t*)y);
 	return 0;
 }
 
@@ -472,7 +477,7 @@ void print_param_buffer(char * buffer, parameter_entry * params, uint8_t index){
 }
 
 
-uint8_t EEPROM_Read_Row(uint8_t row, uint8_t * buffer){
+uint8_t EEPROM_Read_Row(uint16_t row, uint8_t * buffer){
     uint16_t addr;
     addr = row * CY_EEPROM_SIZEOF_ROW;
     for(uint8_t i = 0; i<CY_EEPROM_SIZEOF_ROW;i++){
@@ -580,11 +585,11 @@ void EEPROM_write_conf(parameter_entry * params, uint8_t param_size, uint16_t ee
 		EEPROM_buffer_write(0xEF, count,0);
         count++;
 		EEPROM_buffer_write(0x00, count,1);
-		ret = snprintf(buffer, sizeof(buffer),"%i / %i new config params written. %i bytes from 2048 used.\r\n", change_count, param_count, byte_cnt);
+		ret = snprintf(buffer, sizeof(buffer),"%i / %i new config params written. %i bytes from 1024 used.\r\n", change_count, param_count, byte_cnt);
         send_buffer((uint8_t*)buffer, ret, ptr);
 }
 
-void EEPROM_read_conf(parameter_entry * params, uint8_t param_size, uint16_t eeprom_offset ,port_str *ptr){
+uint8_t EEPROM_read_conf(parameter_entry * params, uint8_t param_size, uint16_t eeprom_offset ,port_str *ptr){
     char buffer[60];
     int ret=0;
     uint16_t addr=eeprom_offset;
@@ -598,10 +603,8 @@ void EEPROM_read_conf(parameter_entry * params, uint8_t param_size, uint16_t eep
             addr++;
         }
         if(!(data[0]== 0x00 && data[1] == 0xC0 && data[2] == 0xFF && data[3] == 0xEE)) {
-            #ifndef BOOT
             SEND_CONST_STRING("WARNING: No or old EEPROM dataset found\r\n",ptr);
-            #endif
-            return;
+            return pdFAIL;
         }
 
     while(addr<CY_EEPROM_SIZE){
@@ -661,10 +664,9 @@ void EEPROM_read_conf(parameter_entry * params, uint8_t param_size, uint16_t eep
             }
         }
     }
-    #ifndef BOOT
     ret = snprintf(buffer, sizeof(buffer), "%i / %i config params loaded\r\n", change_count, param_count);
     send_buffer((uint8_t*)buffer, ret, ptr);
-    #endif
+    return pdPASS;
 }
 
 void Term_Erase_Screen(port_str *ptr) {
