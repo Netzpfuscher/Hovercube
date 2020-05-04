@@ -64,7 +64,7 @@
     
 
 #define STREAMBUFFER_RX_SIZE    128     //bytes
-#define STREAMBUFFER_TX_SIZE    128    //bytes
+#define STREAMBUFFER_TX_SIZE    512    //bytes
     
 #define SKIP_SPACE(ptr) 	if (*ptr == 0x20 && ptr != 0) ptr++ //skip space
 #define CHECK_NULL(ptr)     if (*ptr == 0 || ptr == 0) goto helptext;

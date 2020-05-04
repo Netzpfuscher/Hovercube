@@ -164,6 +164,7 @@ int main(void)
 
   tsk_cli_Start(&huart3);
 
+
   HAL_ADC_Start(&hadc1);
   HAL_ADC_Start(&hadc2);
 
@@ -615,7 +616,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(TPS_ENA_GPIO_Port, TPS_ENA_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(TPS_ENA_GPIO_Port, TPS_ENA_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
@@ -687,7 +688,7 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+
     osDelay(500);
   }
   /* USER CODE END 5 */ 

@@ -32,11 +32,13 @@
 #include "tasks/tsk_priority.h"
 #include "tasks/tsk_uart.h"
 #include "tasks/tsk_cli.h"
+#include "tasks/tsk_overlay.h"
 #include "helper/teslaterm.h"
 #include "helper/printf.h"
 #include "helper/ntc.h"
 #include "math.h"
 #include "util.h"
+#include "config.h"
 
 #include <string.h>
 
@@ -69,22 +71,23 @@ uint8_t command_load_default(char *commandline, port_str *ptr);
 uint8_t command_tterm(char *commandline, port_str *ptr);
 uint8_t command_reset(char *commandline, port_str *ptr);
 uint8_t command_config_get(char *commandline, port_str *ptr);
-uint8_t command_exit(char *commandline, port_str *ptr);
 uint8_t command_signals(char *commandline, port_str *ptr);
+uint8_t command_shutdown(char *commandline, port_str *ptr);
 
 uint8_t callback_ConfigFunction(parameter_entry * params, uint8_t index, port_str *ptr);
 uint8_t callback_DefaultFunction(parameter_entry * params, uint8_t index, port_str *ptr);
-
+uint8_t callback_ComFunction(parameter_entry * params, uint8_t index, port_str *ptr);
 
 cli_config configuration;
 cli_parameter param;
 
 extern P rtP_Left;                      /* Block parameters (auto storage) */
 extern ExtU     rtU_Left;
-
+#include "util.h"
 void recalc_params(){
 
-	rtP_Left.i_max = configuration.curr_max * A2BIT_CONV;
+	//rtP_Left.i_max = configuration.curr_max * A2BIT_CONV;
+	//rtP_Left.id_fieldWeakMax = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;
 }
 
 /*****************************************************************************
@@ -95,8 +98,12 @@ void init_config(){
     //ctrlModReq = 3;
     
     rtU_Left.z_ctrlModReq = 1;
-    configuration.curr_max = 5<<4;
-    rtP_Left.b_fieldWeakEna = 1;
+    //configuration.curr_max = 5<<4;
+    rtP_Left.i_max = (PHASE_CURR_MAX * A2BIT_CONV) << 4;
+    rtP_Left.b_fieldWeakEna = FIELD_WEAK_ENA;
+    rtP_Left.r_fieldWeakHi = FIELD_WEAK_HI<<4;
+    rtP_Left.r_fieldWeakLo = FIELD_WEAK_LO<<4;
+    rtP_Left.id_fieldWeakMax = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;
 
     param.test1 = 0;
     param.test2 = 0;
@@ -124,15 +131,22 @@ rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1
 /*****************************************************************************
 * Parameter struct
 ******************************************************************************/
-extern volatile int pwml;
+
+extern UART_HandleTypeDef huart3;
 
 parameter_entry confparam[] = {
-    //       Parameter Type ,"Text   "         , Value ptr                     ,Min    ,Max    ,Div    ,Callback Function           ,Help text
-    ADD_PARAM(PARAM_DEFAULT ,"speed"           , rtU_Left.r_inpTgt             ,-1000  ,1000   ,0      ,callback_DefaultFunction    ,"Motor Speed")
-    ADD_PARAM(PARAM_CONFIG  ,"ctrl_mode"       , rtU_Left.z_ctrlModReq         ,0      ,3      ,0      ,callback_ConfigFunction     ,"Ctrl mode [1] voltage [2] Speed [3] Torque")
-    ADD_PARAM(PARAM_CONFIG  ,"curr_max"        , configuration.curr_max        ,0      ,1600   ,16     ,callback_ConfigFunction     ,"Maximum phase current [A]")  //100A
-    ADD_PARAM(PARAM_CONFIG  ,"nmot_max"        , rtP_Left.n_max                ,0      ,32000  ,16     ,callback_ConfigFunction     ,"Maximum motor [upm]") //2000UPM
-	ADD_PARAM(PARAM_CONFIG  ,"field_weak"      , rtP_Left.b_fieldWeakEna       ,0      ,1      ,0      ,callback_ConfigFunction     ,"Enable field weakening")
+    //       Parameter Type ,"Text   "         , Value ptr                     ,Min    ,Max    ,Div             ,Callback Function           ,Help text
+    ADD_PARAM(PARAM_DEFAULT ,"speed"           , rtU_Left.r_inpTgt             ,-1000  ,1000   ,0               ,NULL     					 ,"Motor Speed")
+    ADD_PARAM(PARAM_CONFIG  ,"ctrl_mode"       , rtU_Left.z_ctrlModReq         ,0      ,3      ,0               ,callback_ConfigFunction     ,"Ctrl mode [1] voltage [2] Speed [3] Torque")
+    ADD_PARAM(PARAM_CONFIG  ,"curr_max"        , rtP_Left.i_max                ,0      ,32000  ,(16*A2BIT_CONV) ,callback_ConfigFunction     ,"Maximum phase current [A]")  //100A
+    ADD_PARAM(PARAM_CONFIG  ,"nmot_max"        , rtP_Left.n_max                ,0      ,32000  ,16              ,callback_ConfigFunction     ,"Maximum motor [RPM]") //2000UPM
+	ADD_PARAM(PARAM_CONFIG  ,"weak"            , rtP_Left.b_fieldWeakEna       ,0      ,1      ,0               ,callback_ConfigFunction     ,"Enable field weakening")
+	ADD_PARAM(PARAM_CONFIG  ,"weak_h"          , rtP_Left.r_fieldWeakHi        ,0      ,24000  ,16              ,callback_ConfigFunction     ,"Field weak high [RPM]")
+	ADD_PARAM(PARAM_CONFIG  ,"weak_l"          , rtP_Left.r_fieldWeakLo        ,0      ,16000  ,16              ,callback_ConfigFunction     ,"Field weak low [RPM)")
+	ADD_PARAM(PARAM_CONFIG  ,"auth_weak_l"     , rtP_Left.n_fieldWeakAuthLo    ,0      ,16000  ,16              ,callback_ConfigFunction     ,"Field weak auth low [RPM]")
+	ADD_PARAM(PARAM_CONFIG  ,"auth_weak_h"     , rtP_Left.n_fieldWeakAuthHi    ,0      ,24000  ,16              ,callback_ConfigFunction     ,"Field weak auth high [RPM]")
+	ADD_PARAM(PARAM_CONFIG  ,"field_weak_max"  , rtP_Left.id_fieldWeakMax      ,0      ,3200   ,(16*A2BIT_CONV) ,callback_ConfigFunction     ,"Field weak max current [A]")
+	ADD_PARAM(PARAM_CONFIG  ,"baudrate"        , huart3.Init.BaudRate          ,0      ,1000000,0               ,callback_ComFunction        ,"Serial baudrate")
 };
 
 /*****************************************************************************
@@ -151,6 +165,7 @@ command_entry commands[] = {
     ADD_COMMAND("tterm"	        ,command_tterm          ,"Changes terminal mode")
     ADD_COMMAND("config_get"    ,command_config_get     ,"Internal use")
     ADD_COMMAND("signals"       ,command_signals        ,"For debugging")
+	ADD_COMMAND("shutdown"      ,command_shutdown       ,"Shutdown")
 };
 
 uint8_t eeprom_load(port_str *ptr){
@@ -178,7 +193,15 @@ uint8_t callback_ConfigFunction(parameter_entry * params, uint8_t index, port_st
 	return 1;
 }
 
+/*****************************************************************************
+* Callback if a communication relevant parameter is changed
+******************************************************************************/
+uint8_t callback_ComFunction(parameter_entry * params, uint8_t index, port_str *ptr){
 
+	HAL_UART_Init(&huart3);
+
+	return 1;
+}
 
 /*****************************************************************************
 * Default function if a parameter is changes (not used)
@@ -206,7 +229,10 @@ uint8_t command_config_get(char *commandline, port_str *ptr){
 }
 
 
-
+uint8_t command_shutdown(char *commandline, port_str *ptr){
+	HAL_GPIO_WritePin(TPS_ENA_GPIO_Port, TPS_ENA_Pin, pdFALSE);
+	return 1;
+}
 
 
 /*****************************************************************************
@@ -458,22 +484,13 @@ uint8_t command_reset(char *commandline, port_str *ptr){
 }
 
 
-/*****************************************************************************
-* Task handles for the overlay tasks
-******************************************************************************/
-xTaskHandle overlay_Serial_TaskHandle;
+
 
 /*****************************************************************************
 * Helper function for spawning the overlay task
 ******************************************************************************/
 void start_overlay_task(port_str *ptr){
-    switch(ptr->type){
-        case PORT_TYPE_SERIAL:
-            if (overlay_Serial_TaskHandle == NULL) {
-        		//xTaskCreate(tsk_overlay_TaskProc, "Overl_S", STACK_OVERLAY, ptr, PRIO_OVERLAY, &overlay_Serial_TaskHandle);
-            }
-        break;
-    }
+	telemetry = 1;
 }
 
 
@@ -481,15 +498,7 @@ void start_overlay_task(port_str *ptr){
 * Helper function for killing the overlay task
 ******************************************************************************/
 void stop_overlay_task(port_str *ptr){
-    
-    switch(ptr->type){
-        case PORT_TYPE_SERIAL:
-            if (overlay_Serial_TaskHandle != NULL) {
-    				vTaskDelete(overlay_Serial_TaskHandle);
-    				overlay_Serial_TaskHandle = NULL;
-    		}
-        break;
-    }
+	telemetry = 0;
 }
 
 /*****************************************************************************
@@ -606,10 +615,6 @@ uint8_t command_signals(char *commandline, port_str *ptr) {
 
     while(getch(ptr,100 /portTICK_RATE_MS) != 'q'){
 
-    	analog.curr_a = analog.curr_a_cnt * PHASE_CURR_mA_CNT;
-    	analog.curr_b = analog.curr_b_cnt * PHASE_CURR_mA_CNT;
-    	analog.curr_c = analog.curr_c_cnt * PHASE_CURR_mA_CNT;
-
 		Term_Move_Cursor(1,1,ptr);
 		SEND_CONST_STRING("Signal state (q for quit):\r\n", ptr);
 		SEND_CONST_STRING("**************************\r\n", ptr);
@@ -629,6 +634,9 @@ uint8_t command_signals(char *commandline, port_str *ptr) {
 		ret = snprintf_(buf, sizeof(buf), "Current C: %+f\r\n",(float)analog.curr_c/1000.0);
 		send_buffer((uint8_t*)buf, ret, ptr);
 
+		ret = snprintf_(buf, sizeof(buf), "Current DC: %+f\r\n",(float)analog.curr_dc/1000.0);
+				send_buffer((uint8_t*)buf, ret, ptr);
+
 		ret = snprintf_(buf, sizeof(buf), "Volt_A %u\r\n",adc_buffer.volt_a);
 		send_buffer((uint8_t*)buf, ret, ptr);
 
@@ -644,6 +652,9 @@ uint8_t command_signals(char *commandline, port_str *ptr) {
 
 		ret = snprintf_(buf, sizeof(buf), "VBAT: %f\r\n",DC_BUS_CNTtoV(adc_buffer.vbat));
 		send_buffer((uint8_t*)buf, ret, ptr);
+
+		SEND_CONST_STRING("Power button:", ptr);
+		send_signal_state(HAL_GPIO_ReadPin(PWR_BTN_GPIO_Port, PWR_BTN_Pin), pdFALSE, ptr);
 
 
 

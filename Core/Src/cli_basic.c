@@ -199,95 +199,97 @@ void print_param_helperfunc(parameter_entry * params, uint8_t param_size, port_s
     Term_Move_cursor_right(COL_C,ptr);
     SEND_CONST_STRING("| Text\r\n", ptr);
     for (current_parameter = 0; current_parameter < param_size; current_parameter++) {
-		Term_Move_cursor_right(COL_A,ptr);
-		ret = snprintf(buffer,sizeof(buffer), "\033[36m%s", params[current_parameter].name);
-		send_buffer((uint8_t*)buffer,ret,ptr);
-
-		switch (params[current_parameter].type){
-		case TYPE_UNSIGNED:
-			switch (params[current_parameter].size){
-			case 1:
-				u_temp_buffer = *(uint8_t*)params[current_parameter].value;
-				break;
-			case 2:
-				u_temp_buffer = *(uint16_t*)params[current_parameter].value;
-				break;
-			case 4:
-				u_temp_buffer = *(uint32_t*)params[current_parameter].value;
-				break;
-			}
-
-			Term_Move_cursor_right(COL_B,ptr);
-			if(params[current_parameter].div){
-				ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%u.%0*u",
-					(u_temp_buffer/params[current_parameter].div),
-					n_number(params[current_parameter].div)-1,
-					(u_temp_buffer%params[current_parameter].div));
-			}else{
-				ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%u", u_temp_buffer);
-			}
+    	if(params[current_parameter].parameter_type==param_type){
+			Term_Move_cursor_right(COL_A,ptr);
+			ret = snprintf(buffer,sizeof(buffer), "\033[36m%s", params[current_parameter].name);
 			send_buffer((uint8_t*)buffer,ret,ptr);
 
-			break;
-		case TYPE_SIGNED:
-			switch (params[current_parameter].size){
-			case 1:
-				i_temp_buffer = *(int8_t*)params[current_parameter].value;
-				break;
-			case 2:
-				i_temp_buffer = *(int16_t*)params[current_parameter].value;
-				break;
-			case 4:
-				i_temp_buffer = *(int32_t*)params[current_parameter].value;
-				break;
-			}
-
-			Term_Move_cursor_right(COL_B,ptr);
-			if(params[current_parameter].div){
-				uint32_t mod;
-				if(i_temp_buffer<0){
-					mod=(i_temp_buffer*-1)%params[current_parameter].div;
-				}else{
-					mod=i_temp_buffer%params[current_parameter].div;
+			switch (params[current_parameter].type){
+			case TYPE_UNSIGNED:
+				switch (params[current_parameter].size){
+				case 1:
+					u_temp_buffer = *(uint8_t*)params[current_parameter].value;
+					break;
+				case 2:
+					u_temp_buffer = *(uint16_t*)params[current_parameter].value;
+					break;
+				case 4:
+					u_temp_buffer = *(uint32_t*)params[current_parameter].value;
+					break;
 				}
 
-				ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%i.%0*u",
-				(i_temp_buffer/params[current_parameter].div),
-				n_number(params[current_parameter].div)-1,
-				mod);
-			}else{
-				ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%i", i_temp_buffer);
+				Term_Move_cursor_right(COL_B,ptr);
+				if(params[current_parameter].div){
+					ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%u.%0*u",
+						(u_temp_buffer/params[current_parameter].div),
+						n_number(params[current_parameter].div)-1,
+						(u_temp_buffer%params[current_parameter].div));
+				}else{
+					ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%u", u_temp_buffer);
+				}
+				send_buffer((uint8_t*)buffer,ret,ptr);
+
+				break;
+			case TYPE_SIGNED:
+				switch (params[current_parameter].size){
+				case 1:
+					i_temp_buffer = *(int8_t*)params[current_parameter].value;
+					break;
+				case 2:
+					i_temp_buffer = *(int16_t*)params[current_parameter].value;
+					break;
+				case 4:
+					i_temp_buffer = *(int32_t*)params[current_parameter].value;
+					break;
+				}
+
+				Term_Move_cursor_right(COL_B,ptr);
+				if(params[current_parameter].div){
+					uint32_t mod;
+					if(i_temp_buffer<0){
+						mod=(i_temp_buffer*-1)%params[current_parameter].div;
+					}else{
+						mod=i_temp_buffer%params[current_parameter].div;
+					}
+
+					ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%i.%0*u",
+					(i_temp_buffer/params[current_parameter].div),
+					n_number(params[current_parameter].div)-1,
+					mod);
+				}else{
+					ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%i", i_temp_buffer);
+				}
+				send_buffer((uint8_t*)buffer,ret,ptr);
+
+				break;
+			case TYPE_FLOAT:
+
+				Term_Move_cursor_right(COL_B,ptr);
+				ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%f", *(float*)params[current_parameter].value);
+				send_buffer((uint8_t*)buffer,ret,ptr);
+
+				break;
+			case TYPE_CHAR:
+
+				Term_Move_cursor_right(COL_B,ptr);
+				ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%c", *(char*)params[current_parameter].value);
+				send_buffer((uint8_t*)buffer,ret,ptr);
+
+				break;
+			case TYPE_STRING:
+
+				Term_Move_cursor_right(COL_B,ptr);
+				ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%s", (char*)params[current_parameter].value);
+				send_buffer((uint8_t*)buffer,ret,ptr);
+
+				break;
+
 			}
+			Term_Move_cursor_right(COL_C,ptr);
+			ret = snprintf(buffer, sizeof(buffer), "\033[37m| %s\r\n", params[current_parameter].help);
 			send_buffer((uint8_t*)buffer,ret,ptr);
-
-			break;
-		case TYPE_FLOAT:
-
-			Term_Move_cursor_right(COL_B,ptr);
-			ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%f", *(float*)params[current_parameter].value);
-			send_buffer((uint8_t*)buffer,ret,ptr);
-
-			break;
-		case TYPE_CHAR:
-
-			Term_Move_cursor_right(COL_B,ptr);
-			ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%c", *(char*)params[current_parameter].value);
-			send_buffer((uint8_t*)buffer,ret,ptr);
-
-			break;
-		case TYPE_STRING:
-
-			Term_Move_cursor_right(COL_B,ptr);
-			ret = snprintf(buffer, sizeof(buffer), "\033[37m| \033[32m%s", (char*)params[current_parameter].value);
-			send_buffer((uint8_t*)buffer,ret,ptr);
-
-			break;
-
 		}
-		Term_Move_cursor_right(COL_C,ptr);
-		ret = snprintf(buffer, sizeof(buffer), "\033[37m| %s\r\n", params[current_parameter].help);
-		send_buffer((uint8_t*)buffer,ret,ptr);
-	}
+    }
 }
 
 void print_param_help(parameter_entry * params, uint8_t param_size, port_str *ptr){

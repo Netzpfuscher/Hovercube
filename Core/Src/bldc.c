@@ -26,7 +26,7 @@ extern ExtY rtY_Right;                  /* External outputs */
 
 
 extern volatile adc_buf_t adc_buffer;
-
+analog_t analog;
 
 extern TIM_HandleTypeDef htim1;
 
@@ -68,9 +68,13 @@ void DMA1_Channel1_IRQHandler() {
   analog.curr_a_cnt = (offset_curr_a - adc_buffer.curr_a);
   analog.curr_b_cnt = (offset_curr_b - adc_buffer.curr_b);
   analog.curr_c_cnt = (offset_curr_c - adc_buffer.curr_c);
-  //analog.curr_a = analog.curr_a_cnt * PHASE_CURR_mA_CNT;
-  //analog.curr_b = analog.curr_b_cnt * PHASE_CURR_mA_CNT;
-  //analog.curr_c = analog.curr_c_cnt * PHASE_CURR_mA_CNT;
+  analog.curr_a = analog.curr_a_cnt * PHASE_CURR_mA_CNT;
+  analog.curr_b = analog.curr_b_cnt * PHASE_CURR_mA_CNT;
+  analog.curr_c = analog.curr_c_cnt * PHASE_CURR_mA_CNT;
+
+  static int32_t filter_buffer;
+  filtLowPass32((analog.curr_a_cnt+analog.curr_b_cnt+analog.curr_c_cnt)/3, 20, &filter_buffer);
+  analog.curr_dc = ((filter_buffer>>16)*(PHASE_CURR_mA_CNT*173)/100);
 
   /*
   if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time

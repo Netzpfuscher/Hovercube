@@ -24,6 +24,7 @@
 
 #include "tasks/tsk_cli.h"
 #include "tasks/tsk_priority.h"
+#include "tasks/tsk_overlay.h"
 #include "cli_basic.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -89,7 +90,7 @@ uint8_t handle_terminal(ntshell_t *ptr, port_str *port) {
 		if (xSemaphoreTake(port->term_block, portMAX_DELAY)) {
 			ntshell_execute_nb(ptr, c);
 			xSemaphoreGive(port->term_block);
-		} 
+		}
 	}
 	return 0;
 }
@@ -101,7 +102,7 @@ uint8_t handle_terminal(ntshell_t *ptr, port_str *port) {
  * to preform the desired function within the merge regions of the task procedure
  * to add functionality to the task.
  */
-port_str port;
+
 
 void tsk_cli_TaskProc(void *pvParameters) {
 	/*
@@ -113,7 +114,7 @@ void tsk_cli_TaskProc(void *pvParameters) {
 
 
 	ntshell_t ntsh;
-
+	port_str port;
 
     port.type = PORT_TYPE_SERIAL;
     port.term_mode = PORT_TERM_VT100;
@@ -124,6 +125,7 @@ void tsk_cli_TaskProc(void *pvParameters) {
     xSemaphoreGive(port.term_block);
 
     tsk_uart_Start(&port);
+    tsk_overlay_Start(&port);
 
     if(eeprom_load(&port)==pdFAIL){
     	init_config();

@@ -55,19 +55,6 @@ ExtY     rtY_Left;                      /* External outputs */
 
 //---------------
 
-int16_t  cmd1;                          // normalized input value. -1000 to 1000
-int16_t  cmd2;                          // normalized input value. -1000 to 1000
-
-int16_t  speedAvg;                      // average measured speed
-int16_t  speedAvgAbs;                   // average measured speed in absolute
-uint8_t  timeoutFlagADC    = 0;         // Timeout Flag for ADC Protection:    0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
-uint8_t  timeoutFlagSerial = 0;         // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
-
-uint8_t  ctrlModReq    = CTRL_MOD_REQ;  // Final control mode request 
-
-//uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300};     // Dummy virtual address to avoid warnings
-
-
 
 
 /* =========================== Initialization Functions =========================== */
@@ -82,8 +69,8 @@ void BLDC_Init(void) {
   //rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA;
   rtP_Left.id_fieldWeakMax      = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;   // fixdt(1,16,4)
   rtP_Left.a_phaAdvMax          = PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
-  rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
-  rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
+  //rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
+  //rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
 
 
 

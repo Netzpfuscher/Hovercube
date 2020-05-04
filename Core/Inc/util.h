@@ -23,75 +23,22 @@
 
 #include <stdint.h>
 
-#if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
-  #ifdef CONTROL_IBUS    
-    typedef struct{
-      uint8_t  start;
-      uint8_t  type; 
-      uint8_t  channels[IBUS_NUM_CHANNELS*2];
-      uint8_t  checksuml;
-      uint8_t  checksumh;    
-    } Serialcommand;
-  #else
-    typedef struct{
-      uint16_t  start; 
-      int16_t   steer;
-      int16_t   speed;
-      uint16_t  checksum;    
-    } Serialcommand;
-  #endif
-#endif
-#if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
-    typedef struct{
-      uint16_t	start;
-      int16_t  	roll;
-      int16_t  	pitch;
-      int16_t  	yaw;
-      uint16_t  sensors;
-      uint16_t 	checksum;
-    } SerialSideboard;
-#endif
 
 // Initialization Functions
 void BLDC_Init(void);
 void Input_Lim_Init(void);
 void Input_Init(void);
 
-// General Functions
-void poweronMelody(void);
-void shortBeep(uint8_t freq);
-void shortBeepMany(uint8_t cnt);
-void longBeep(uint8_t freq);
-void calcAvgSpeed(void);
-void adcCalibLim(void);
-void updateCurSpdLim(void);
-void saveConfig(void);
 
-// Poweroff Functions
-void poweroff(void);
-void poweroffPressCheck(void);
 
-// Read Command Function
-void readCommand(void);
-int  addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max);
 
-// Sideboard functions
-void sideboardLeds(uint8_t *leds);
-void sideboardSensors(uint8_t sensors);
+
 
 // Filtering Functions
 void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);
 void rateLimiter16(int16_t u, int16_t rate, int16_t *y);
-void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t *rty_speedL);
 
-// Multiple Tap Function
-typedef struct {
-  uint32_t 	t_timePrev;
-  uint8_t 	z_pulseCntPrev;
-  uint8_t 	b_hysteresis;
-  uint8_t 	b_multipleTap;
-} MultipleTap;
-void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x);
+
 
 extern uint8_t  ctrlModReq;
 

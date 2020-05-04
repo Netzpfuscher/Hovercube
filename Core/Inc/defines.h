@@ -1,3 +1,7 @@
+#ifndef DEFINES_H
+#define DEFINES_H
+#include <stdint.h>
+
 typedef struct {
   uint16_t curr_a;
   uint16_t curr_b;
@@ -18,9 +22,11 @@ typedef struct {
   int16_t curr_a_cnt;
   int16_t curr_b_cnt;
   int16_t curr_c_cnt;
+
+  int32_t curr_dc;
 } analog_t;
 
-analog_t analog;
+extern analog_t analog;
 
 
 #define PHASE_CURR_mA_CNT 50 //mA per bit
@@ -29,6 +35,8 @@ analog_t analog;
 #define A2BIT_CONV 1000/PHASE_CURR_mA_CNT
 
 #define DC_BUS_CNTtoV(cnt) (float)((uint32_t)cnt*DC_VOLT_uV_CNT)/1e6
+
+#define DC_BUS_CNTtoVi(cnt) ((uint32_t)cnt*DC_VOLT_uV_CNT)/1e6
 
 #define MILLI_R (R * 1000)
 #define MILLI_PSI (PSI * 1000)
@@ -50,3 +58,5 @@ analog_t analog;
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN3(a, b, c) MIN(a, MIN(b, c))
 #define MAX3(a, b, c) MAX(a, MAX(b, c))
+
+#endif

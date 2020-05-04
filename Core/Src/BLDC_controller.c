@@ -18,6 +18,7 @@
  */
 
 #include "BLDC_controller.h"
+#include "defines.h"
 
 /* Named constants for Chart: '<S4>/F03_02_Control_Mode_Manager' */
 #define IN_ACTIVE                      ((uint8_T)1U)
@@ -1742,6 +1743,7 @@ void BLDC_controller_step(RT_MODEL *const rtM)
       /* Outputs for Atomic SubSystem: '<S41>/Low_Pass_Filter' */
       Low_Pass_Filter(rtb_TmpSignalConversionAtLow_Pa, rtP->cf_currFilt,
                       rtDW->DataTypeConversion, &rtDW->Low_Pass_Filter_m);
+      //OUTPUT LOW_PASS JKE
 
       /* End of Outputs for SubSystem: '<S41>/Low_Pass_Filter' */
 

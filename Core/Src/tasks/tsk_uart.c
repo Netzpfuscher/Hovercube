@@ -62,6 +62,7 @@ xSemaphoreHandle tx_Semaphore;
 /* `#START USER_TASK_LOCAL_CODE` */
 
 
+
 /* `#END` */
 /* ------------------------------------------------------------------------ */
 /*
@@ -96,11 +97,14 @@ void tsk_uart_TaskProc(void *pvParameters) {
 
 	/* These uart interrupts halt any ongoing transfer if an error occurs, disable them */
 	/* Disable the UART Parity Error Interrupt */
-	 __HAL_UART_DISABLE_IT(port->uart_ptr, UART_IT_PE);
+	// __HAL_UART_DISABLE_IT(port->uart_ptr, UART_IT_PE);
 	/* Disable the UART Error Interrupt: (Frame error, noise error, overrun error) */
-	__HAL_UART_DISABLE_IT(port->uart_ptr, UART_IT_ERR);
+	//__HAL_UART_DISABLE_IT(port->uart_ptr, UART_IT_ERR);
+
+
 
 	HAL_UART_Receive_DMA(port->uart_ptr, rx_dma_circ_buf, CIRC_BUF_SZ);
+	CLEAR_BIT(port->uart_ptr->Instance->CR3, USART_CR3_EIE);
 
 	char c;
 
@@ -116,10 +120,10 @@ void tsk_uart_TaskProc(void *pvParameters) {
 		}
 
 		while(rd_ptr != DMA_WRITE_PTR) {
-			c = rx_dma_circ_buf[rd_ptr++];
-			rd_ptr &= (CIRC_BUF_SZ - 1);
-			if(xStreamBufferSend(port->rx, &c, 1, 0)==0){
-				//alarm_push(ALM_PRIO_WARN,warn_serial_overrun,ALM_NO_VALUE);
+			c = rx_dma_circ_buf[rd_ptr];
+			if(xStreamBufferSend(port->rx, &c, 1, 0)){
+				rd_ptr++;
+				rd_ptr &= (CIRC_BUF_SZ - 1);
 			}
 		}
 

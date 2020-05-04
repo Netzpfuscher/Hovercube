@@ -30,7 +30,7 @@
 #define PRIO_UART 3
     
 #define STACK_TERMINAL 1024
-#define STACK_OVERLAY 128
+#define STACK_OVERLAY 512
 #define STACK_UART 512
     
 /* Basic bit manipulation macros

@@ -63,42 +63,6 @@ void send_gauge_config(uint8_t gauge, int16_t min, int16_t max, char * text, por
     send_string(text, ptr);
 }
 
-void send_chart_clear(port_str *ptr){
-    send_buffer((uint8_t*)chartclear,sizeof(chartclear),ptr); 
-}
-
-void send_chart_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t color, port_str *ptr){
-    uint8_t buf[12];
-    buf[0] = 0xFF;
-    buf[1] = sizeof(buf)-2;
-    buf[2] = TT_CHART_LINE;
-    buf[3] = x1;
-    buf[4] = (x1>>8);
-    buf[5] = y1;
-    buf[6] = (y1>>8);
-    buf[7] = x2;
-    buf[8] = (x2>>8);
-    buf[9] = y2;
-    buf[10] = (y2>>8);
-    buf[11] = color;
-    send_buffer(buf,sizeof(buf),ptr); 
-}
-
-void send_chart_text(int16_t x, int16_t y, uint8_t color, uint8_t size, char * text, port_str *ptr){
-    uint8_t bytes = strlen(text);
-    uint8_t buf[9];
-    buf[0] = 0xFF;
-    buf[1] = bytes+sizeof(buf)-2;
-    buf[2] = TT_CHART_TEXT;
-    buf[3] = x;
-    buf[4] = (x>>8);
-    buf[5] = y;
-    buf[6] = (y>>8);
-    buf[7] = color;
-    buf[8] = size;
-    send_buffer(buf,sizeof(buf),ptr);
-    send_string(text, ptr);
-}
 
 void send_config(char* param,const char* help_text, port_str *ptr){
     uint8_t len = strlen(param);
@@ -112,28 +76,4 @@ void send_config(char* param,const char* help_text, port_str *ptr){
     send_string(param, ptr);
     send_char(';', ptr);
     send_string((char*)help_text, ptr);
-}
-
-
-
-void send_chart_text_center(int16_t x, int16_t y, uint8_t color, uint8_t size, char * text, port_str *ptr){
-    uint8_t bytes = strlen(text);
-    uint8_t buf[9];
-    buf[0] = 0xFF;
-    buf[1] = bytes+sizeof(buf)-2;
-    buf[2] = TT_CHART_TEXT_CENTER;
-    buf[3] = x;
-    buf[4] = (x>>8);
-    buf[5] = y;
-    buf[6] = (y>>8);
-    buf[7] = color;
-    buf[8] = size;
-    send_buffer(buf,sizeof(buf),ptr);
-    send_string(text, ptr);
-}
-
-void send_status(uint8_t bus_active, uint8_t transient_active, uint8_t bus_controlled,uint8_t killbit ,port_str *ptr) {
-    statusbuf[2] = TT_STATUS;
-	statusbuf[3] = bus_active|(transient_active<<1)|(bus_controlled<<2)|(killbit<<3);
-    send_buffer(statusbuf, sizeof(statusbuf), ptr);
 }

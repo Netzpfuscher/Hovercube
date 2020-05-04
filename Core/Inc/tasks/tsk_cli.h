@@ -41,8 +41,7 @@
 void tsk_cli_Start(void *uart_ptr) ;
 void tsk_cli_TaskProc(void *pvParameters);
 
-extern port_str serial_port;
-extern port_str null_port;
+extern port_str port;;
 
 /*
  * Add user function prototypes in the below merge region to add user

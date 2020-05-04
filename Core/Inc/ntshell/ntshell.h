@@ -38,7 +38,7 @@
 #include "text_editor.h"
 #include "text_history.h"
 
-#define NTSHELL_PROMPT_MAXLEN   (32)
+#define NTSHELL_PROMPT_MAXLEN   (8)
 #define NTSHELL_PROMPT_DEFAULT  ">"
 #define NTSHELL_PROMPT_NEWLINE  "\r\n"
 
