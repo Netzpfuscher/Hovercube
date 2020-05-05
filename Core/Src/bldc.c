@@ -76,28 +76,6 @@ void DMA1_Channel1_IRQHandler() {
   filtLowPass32((analog.curr_a_cnt+analog.curr_b_cnt+analog.curr_c_cnt)/3, 20, &filter_buffer);
   analog.curr_dc = ((filter_buffer>>16)*(PHASE_CURR_mA_CNT*173)/100);
 
-  /*
-  if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time
-    batteryVoltage = batteryVoltage * 0.99 + ((float)adc_buffer.batt1 * ((float)BAT_CALIB_REAL_VOLTAGE / (float)BAT_CALIB_ADC)) * 0.01;
-  }*/
-/*
-
-  //disable PWM when current limit is reached (current chopping)
-  if(ABS((adc_buffer.dcl - offsetdcl) * MOTOR_AMP_CONV_DC_AMP) > configuration || timeout > TIMEOUT || enable == 0) {
-    LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
-    //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
-  } else {
-    LEFT_TIM->BDTR |= TIM_BDTR_MOE;
-    //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 0);
-  }
-
-  if(ABS((adc_buffer.dcr - offsetdcr) * MOTOR_AMP_CONV_DC_AMP)  > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/search?q=ctlMod&unscoped_q=ctlMod
-    RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
-  } else {
-    RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
-  }
-*/
-
 
   // ############################### MOTOR CONTROL ###############################
 
@@ -131,10 +109,6 @@ void DMA1_Channel1_IRQHandler() {
      ul            = rtY_Left.DC_phaA;
      vl            = rtY_Left.DC_phaB;
      wl            = rtY_Left.DC_phaC;
-   // errCodeLeft  = rtY_Left.z_errCode;
-   // motSpeedLeft = rtY_Left.n_mot;
-   // motAngleLeft = rtY_Left.a_elecAngle;
-
 
   htim1.Instance->CCR1 = CLAMP(ul + pwm_res / 2, 10, pwm_res-10);
   htim1.Instance->CCR2 = CLAMP(vl + pwm_res / 2, 10, pwm_res-10);

@@ -78,12 +78,10 @@ uint8_t callback_ConfigFunction(parameter_entry * params, uint8_t index, port_st
 uint8_t callback_DefaultFunction(parameter_entry * params, uint8_t index, port_str *ptr);
 uint8_t callback_ComFunction(parameter_entry * params, uint8_t index, port_str *ptr);
 
-cli_config configuration;
-cli_parameter param;
 
 extern P rtP_Left;                      /* Block parameters (auto storage) */
 extern ExtU     rtU_Left;
-#include "util.h"
+
 void recalc_params(){
 
 	//rtP_Left.i_max = configuration.curr_max * A2BIT_CONV;
@@ -95,38 +93,20 @@ void recalc_params(){
 ******************************************************************************/
 void init_config(){
 
-    //ctrlModReq = 3;
-    
-    rtU_Left.z_ctrlModReq = 1;
-    //configuration.curr_max = 5<<4;
-    rtP_Left.i_max = (PHASE_CURR_MAX * A2BIT_CONV) << 4;
-    rtP_Left.b_fieldWeakEna = FIELD_WEAK_ENA;
-    rtP_Left.r_fieldWeakHi = FIELD_WEAK_HI<<4;
-    rtP_Left.r_fieldWeakLo = FIELD_WEAK_LO<<4;
-    rtP_Left.id_fieldWeakMax = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;
+    rtU_Left.z_ctrlModReq 		= 1;
+    rtP_Left.i_max          	= (PHASE_CURR_MAX * A2BIT_CONV) << 4;
+    rtP_Left.b_fieldWeakEna 	= FIELD_WEAK_ENA;
+    rtP_Left.r_fieldWeakHi  	= FIELD_WEAK_HI<<4;
+    rtP_Left.r_fieldWeakLo  	= FIELD_WEAK_LO<<4;
+    rtP_Left.id_fieldWeakMax 	= (FIELD_WEAK_MAX * A2BIT_CONV) << 4;
+    rtP_Left.a_phaAdvMax     	= PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
 
-    param.test1 = 0;
-    param.test2 = 0;
     recalc_params();
 
 }
 
 
 // clang-format off
-
-
-/*
-rtP_Left.b_selPhaABCurrMeas   = 1;            // Left motor measured current phases {Green, Blue} = {iA, iB} -> do NOT change
-rtP_Left.z_ctrlTypSel         = CTRL_TYP_SEL;
-rtP_Left.b_diagEna            = DIAG_ENA;
-rtP_Left.i_max                = configuration.curr_max * A2BIT_CONV;  // fixdt(1,16,4)
-rtP_Left.n_max                = configuration.nmot_max;               // fixdt(1,16,4)
-rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA;
-rtP_Left.id_fieldWeakMax      = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;   // fixdt(1,16,4)
-rtP_Left.a_phaAdvMax          = PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
-rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
-rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
-*/
 
 /*****************************************************************************
 * Parameter struct

@@ -64,14 +64,6 @@ void BLDC_Init(void) {
   rtP_Left.b_selPhaABCurrMeas   = 1;            // Left motor measured current phases {Green, Blue} = {iA, iB} -> do NOT change
   rtP_Left.z_ctrlTypSel         = CTRL_TYP_SEL;
   rtP_Left.b_diagEna            = DIAG_ENA; 
-  //rtP_Left.i_max                = configuration.curr_max * A2BIT_CONV;  // fixdt(1,16,4)
-  //rtP_Left.n_max                = configuration.nmot_max;               // fixdt(1,16,4)
-  //rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA;
-  rtP_Left.id_fieldWeakMax      = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;   // fixdt(1,16,4)
-  rtP_Left.a_phaAdvMax          = PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
-  //rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
-  //rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
-
 
 
   /* Pack LEFT motor data into RTM */
@@ -110,17 +102,6 @@ void BLDC_Init(void) {
   tmp = CLAMP(tmp, -2147483648LL, 2147483647LL);  // Overflow protection: 2147483647LL = 2^31 - 1
   *y = (int32_t)tmp + (*y);
 }
-  // Old filter
-  // Inputs:       u     = int16
-  // Outputs:      y     = fixdt(1,32,20)
-  // Parameters:   coef  = fixdt(0,16,16) = [0,65535U]
-  // yint = (int16_t)(y >> 20); // the integer output is the fixed-point ouput shifted by 20 bits
-  // void filtLowPass32(int16_t u, uint16_t coef, int32_t *y) {
-  //   int32_t tmp;  
-  //   tmp = (int16_t)(u << 4) - (*y >> 16);  
-  //   tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection  
-  //   *y  = coef * tmp + (*y);
-  // }
 
 
   /* rateLimiter16(int16_t u, int16_t rate, int16_t *y);

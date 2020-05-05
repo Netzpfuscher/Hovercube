@@ -65,15 +65,15 @@
 #endif
 
 // support for the long long types (%llu or %p)
-// default: activated
-#ifndef PRINTF_DISABLE_SUPPORT_LONG_LONG
+// default: deactivated
+#ifdef PRINTF_DISABLE_SUPPORT_LONG_LONG
 #define PRINTF_SUPPORT_LONG_LONG
 #endif
 
 // support for the ptrdiff_t type (%t)
 // ptrdiff_t is normally defined in <stddef.h> as long or long long type
-// default: activated
-#ifndef PRINTF_DISABLE_SUPPORT_PTRDIFF_T
+// default: deactivated
+#ifdef PRINTF_DISABLE_SUPPORT_PTRDIFF_T
 #define PRINTF_SUPPORT_PTRDIFF_T
 #endif
 

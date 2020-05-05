@@ -22,33 +22,36 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef CLI_COMMON_H
-#define CLI_COMMON_H
+#if !defined(overlay_TASK_H)
+#define overlay_TASK_H
 
-
+#include <stdint.h>
 #include "cli_basic.h"
 
-/* RTOS includes. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "timers.h"
+/*
+ * Add user task definitions, types, includes and other things in the below
+ * merge region to customize the task.
+ */
+/* `#START USER_TYPES_AND_DEFINES` */
 
+/* `#END` */
 
+void tsk_overlay_TaskProc(void *pvParameters);
 
-void nt_interpret(char *text, port_str *ptr);
-void init_config();
-void recalc_params();
-uint8_t eeprom_load(port_str *ptr);
+void tsk_overlay_chart_stop();
+void tsk_overlay_chart_start();
+void tsk_overlay_Start(port_str *port);
 
-uint8_t command_cls(char *commandline, port_str *ptr);
-void stop_overlay_task(port_str *ptr);
-void update_visibilty(void);
+extern uint8_t telemetry;
 
-extern parameter_entry confparam[];
+/*
+ * Add user function prototypes in the below merge region to add user
+ * functionality to the task definition.
+ */
+/* `#START USER_TASK_PROTOS` */
 
+/* `#END` */
 
-#define CONF_SIZE sizeof(confparam) / sizeof(parameter_entry)
-
+/* ------------------------------------------------------------------------ */
 #endif
+/* [] END OF FILE */

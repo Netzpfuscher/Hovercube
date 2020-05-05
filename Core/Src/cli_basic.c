@@ -39,8 +39,6 @@ uint8_t EEPROM_1_Write_Row(uint16_t row, uint8_t * buffer);
 
 uint16_t byte_cnt;
 
-//#define EEPROM_READ_BYTE(x) EEPROM_1_ReadByte(x)
-//#define EEPROM_WRITE_ROW(x,y) EEPROM_1_Write(y,x)
 
 uint8_t EEPROM_1_ReadByte(uint8_t x){
 	uint8_t data[4];

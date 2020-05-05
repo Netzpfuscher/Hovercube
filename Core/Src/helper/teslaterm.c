@@ -9,9 +9,7 @@
 
 uint8_t gaugebuf[] = {0xFF,0x04, TT_GAUGE,0x00,0x00,0x00};
 uint8_t chartbuf[] = {0xFF,0x04, TT_CHART,0x00,0x00,0x00};
-uint8_t statusbuf[] = {0xFF,0x02, TT_STATUS,0x00};
 const uint8_t chartdraw[] = {0xFF,0x02, TT_CHART_DRAW,0x00};
-const uint8_t chartclear[] = {0xFF,0x02, TT_CHART_CLEAR,0x00};
 
 void send_gauge(uint8_t gauge, int16_t val, port_str *ptr){
     gaugebuf[3]=gauge;

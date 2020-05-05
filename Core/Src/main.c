@@ -30,6 +30,10 @@
 #include "config.h"
 #include "cli_common.h"
 #include "util.h"
+#include "BLDC_controller.h"
+#include "rtwtypes.h"
+#include "config.h"
+
 
 /* USER CODE END Includes */
 
@@ -138,6 +142,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
+  HAL_GPIO_WritePin(TPS_ENA_GPIO_Port, TPS_ENA_Pin, pdTRUE);
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -257,7 +262,7 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
-  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV8;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -306,7 +311,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_3;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -375,7 +380,7 @@ static void MX_ADC2_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -682,15 +687,25 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
+uint8_t led_pattern=LED_OK;
+extern ExtY     rtY_Left;
+
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
-  for(;;)
-  {
+	for(;;)
+	{
+		if(rtY_Left.z_errCode) led_pattern = LED_MOTOR_ERROR;
+		for(uint8_t i=0;i<led_pattern;i++){
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, pdFALSE);
+			vTaskDelay(200 / portTICK_PERIOD_MS);
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, pdTRUE);
+		}
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+	}
 
-    osDelay(500);
-  }
+
   /* USER CODE END 5 */ 
 }
 

@@ -127,9 +127,10 @@ void tsk_cli_TaskProc(void *pvParameters) {
     tsk_uart_Start(&port);
     tsk_overlay_Start(&port);
 
-    if(eeprom_load(&port)==pdFAIL){
-    	init_config();
-    }
+    init_config();
+
+    eeprom_load(&port);
+
     recalc_params();
     BLDC_Init();
 
